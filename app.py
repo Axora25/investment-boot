@@ -1784,6 +1784,8 @@ def get_price_from_twelvedata(symbol, api_key=TWELVEDATA_API_KEY):
     """Fetch latest price from Twelve Data quote endpoint."""
     if not api_key:
         return None
+    # Normalize index symbols for Twelve Data
+    symbol = TD_INDEX_SYMBOL_MAP.get(symbol, symbol)
     base_url = "https://api.twelvedata.com/quote"
     params = {
         "symbol": symbol,
@@ -1818,6 +1820,8 @@ def fetch_daily_bars_twelvedata(symbol, api_key=TWELVEDATA_API_KEY):
     """
     if not api_key:
         return None
+    # Normalize index symbols for Twelve Data
+    symbol = TD_INDEX_SYMBOL_MAP.get(symbol, symbol)
     # Use time_series endpoint
     base_url = "https://api.twelvedata.com/time_series"
     params = {
@@ -1827,6 +1831,7 @@ def fetch_daily_bars_twelvedata(symbol, api_key=TWELVEDATA_API_KEY):
         'apikey': api_key,
     }
     try:
+        app.logger.info(f"Twelve Data time_series request for {symbol}")
         resp = requests.get(base_url, params=params, timeout=8)
         if resp.status_code != 200:
             app.logger.warning(f"TwelveData time_series {resp.status_code}: {resp.text[:200]}")
@@ -1864,12 +1869,24 @@ INDEX_SYMBOL_MAP = {
     # Add more as needed
 }
 
+# Twelve Data may use slightly different symbols for indices (no caret)
+TD_INDEX_SYMBOL_MAP = {
+    "^DJI": "DJI",
+    "^IXIC": "IXIC",
+    "^GSPC": "GSPC",
+    "^N225": "N225",
+    "^FTSE": "FTSE",
+    "^NSEI": "NSEI",
+    "^BSESN": "BSESN",
+}
+
 def get_unified_stock_price(symbol):
     app.logger.info(f"Fetching {symbol} using unified logic")
-    # First try Twelve Data for everything if key present
-    td_price = get_price_from_twelvedata(symbol)
+    # First try Twelve Data for everything if key present (normalize index)
+    td_symbol = TD_INDEX_SYMBOL_MAP.get(symbol, symbol)
+    td_price = get_price_from_twelvedata(td_symbol)
     if td_price is not None:
-        app.logger.info(f"Used Twelve Data for {symbol}")
+        app.logger.info(f"Used Twelve Data for {symbol} (queried {td_symbol})")
         return {'source': 'twelvedata', 'price': td_price}
     # Second try Finnhub (index mapping if available, else direct)
     finnhub_symbol = INDEX_SYMBOL_MAP.get(symbol, symbol)
@@ -1930,7 +1947,6 @@ def test_twelvedata():
             'message': f'Twelve Data test failed: {str(e)}'
         }), 400
 
-# Lightweight health check (for Render/uptime checks)
 @app.route('/healthz', methods=['GET'])
 def healthz():
     try:
