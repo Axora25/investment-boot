@@ -1930,6 +1930,18 @@ def test_twelvedata():
             'message': f'Twelve Data test failed: {str(e)}'
         }), 400
 
+# Lightweight health check (for Render/uptime checks)
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    try:
+        return jsonify({
+            'status': 'ok',
+            'timestamp': time.time(),
+            'cache_size': len(stock_cache)
+        })
+    except Exception:
+        return jsonify({'status': 'error'}), 500
+
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
