@@ -14,6 +14,7 @@ import threading
 from collections import deque
 import random
 from urllib.parse import urlencode
+import pandas as pd
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
@@ -138,8 +139,12 @@ def get_stock_data(ticker, force_refresh=False, cache_duration=None):
     
     try:
         app.logger.info(f"Fetching fresh data for {ticker}")
-        stock = yf.Ticker(ticker)
-        data = stock.history(period="1d")
+        # 1) Try Twelve Data daily bars
+        data = fetch_daily_bars_twelvedata(ticker)
+        if data is None or data.empty:
+            # 2) Fallback to Yahoo Finance
+            stock = yf.Ticker(ticker)
+            data = stock.history(period="1d")
         
         if data.empty:
             app.logger.warning(f"Empty data returned for {ticker}")
@@ -1807,6 +1812,49 @@ def get_price_from_twelvedata(symbol, api_key=TWELVEDATA_API_KEY):
         app.logger.error(f"TwelveData exception for {symbol}: {e}")
     return None
 
+def fetch_daily_bars_twelvedata(symbol, api_key=TWELVEDATA_API_KEY):
+    """Fetch daily OHLCV as pandas.DataFrame with index as datetime and columns Open, High, Low, Close, Volume.
+    Returns None on failure.
+    """
+    if not api_key:
+        return None
+    # Use time_series endpoint
+    base_url = "https://api.twelvedata.com/time_series"
+    params = {
+        'symbol': symbol,
+        'interval': '1day',
+        'outputsize': 1,  # only need the most recent bar to match previous usage
+        'apikey': api_key,
+    }
+    try:
+        resp = requests.get(base_url, params=params, timeout=8)
+        if resp.status_code != 200:
+            app.logger.warning(f"TwelveData time_series {resp.status_code}: {resp.text[:200]}")
+            return None
+        data = resp.json()
+        values = data.get('values')
+        if not values:
+            return None
+        # values is a list of dicts with keys: datetime, open, high, low, close, volume
+        latest = values[0]
+        dt_str = latest.get('datetime')
+        if not dt_str:
+            return None
+        # Build DataFrame with single row
+        row = {
+            'Open': float(latest.get('open')) if latest.get('open') is not None else None,
+            'High': float(latest.get('high')) if latest.get('high') is not None else None,
+            'Low': float(latest.get('low')) if latest.get('low') is not None else None,
+            'Close': float(latest.get('close')) if latest.get('close') is not None else None,
+            'Volume': float(latest.get('volume')) if latest.get('volume') is not None else None,
+        }
+        index = pd.to_datetime([dt_str])
+        df = pd.DataFrame([row], index=index)
+        return df
+    except Exception as e:
+        app.logger.error(f"TwelveData time_series exception for {symbol}: {e}")
+        return None
+
 # Map Yahoo index symbols to Finnhub equivalents
 INDEX_SYMBOL_MAP = {
     "^DJI": "DJI",
@@ -1818,22 +1866,20 @@ INDEX_SYMBOL_MAP = {
 
 def get_unified_stock_price(symbol):
     app.logger.info(f"Fetching {symbol} using unified logic")
-    # Check if it's a mapped index
-    if symbol in INDEX_SYMBOL_MAP:
-        finnhub_symbol = INDEX_SYMBOL_MAP[symbol]
-        price = get_price_from_finnhub(finnhub_symbol)
-        if price is not None:
+    # First try Twelve Data for everything if key present
+    td_price = get_price_from_twelvedata(symbol)
+    if td_price is not None:
+        app.logger.info(f"Used Twelve Data for {symbol}")
+        return {'source': 'twelvedata', 'price': td_price}
+    # Second try Finnhub (index mapping if available, else direct)
+    finnhub_symbol = INDEX_SYMBOL_MAP.get(symbol, symbol)
+    price = get_price_from_finnhub(finnhub_symbol)
+    if price is not None:
+        if finnhub_symbol != symbol:
             app.logger.info(f"Used Finnhub for index {symbol} (as {finnhub_symbol})")
-            return {'source': 'finnhub', 'price': price}
         else:
-            app.logger.info(f"Finnhub did not return data for index {symbol} (as {finnhub_symbol}), falling back to Yahoo Finance")
-    elif is_us_stock(symbol):
-        price = get_price_from_finnhub(symbol)
-        if price is not None:
-            app.logger.info(f"Used Finnhub for US stock {symbol}")
-            return {'source': 'finnhub', 'price': price}
-        else:
-            app.logger.info(f"Finnhub did not return data for US stock {symbol}, falling back to Yahoo Finance")
+            app.logger.info(f"Used Finnhub for {symbol}")
+        return {'source': 'finnhub', 'price': price}
     # Fallback to Yahoo Finance
     data = get_stock_data_with_retry(symbol, max_retries=2, real_time=True)
     if data is not None and not data.empty:
