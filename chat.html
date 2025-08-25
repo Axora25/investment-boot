@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Investment Advisor - Chat</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        /* Theme variables */
+       /* Enhanced Attractive Theme Variables */
+:root {
+    /* Light theme (default) */
+    --bg-color: #f0f7ff;
+    --card-bg: #ffffff;
+    --text-color: #1e293b;
+    --header-bg: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    --header-text: #ffffff;
+    --border-color: #e2e8f0;
+    --card-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.07), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+    --primary-color: #3b82f6;
+    --secondary-color: #2563eb;
+    --accent-color: #8b5cf6;
+    --message-user-bg: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    --message-user-text: #ffffff;
+    --message-bot-bg: #ffffff;
+    --message-bot-text: #1e293b;
+    --input-bg: #f1f5f9;
+    --hover-color: #e2e8f0;
+    --positive-color: #10b981;
+    --negative-color: #ef4444;
+    --chart-icon-color: #3b82f6;
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+    --glow-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Dark theme */
+html[data-theme='dark'] {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f1f5f9;
+    --header-bg: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    --header-text: #ffffff;
+    --border-color: #334155;
+    --card-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.2), 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+    --primary-color: #3b82f6;
+    --secondary-color: #2563eb;
+    --accent-color: #8b5cf6;
+    --message-user-bg: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    --message-user-text: #ffffff;
+    --message-bot-bg: #1e293b;
+    --message-bot-text: #f1f5f9;
+    --input-bg: #334155;
+    --hover-color: #475569;
+    --positive-color: #10b981;
+    --negative-color: #ef4444;
+    --chart-icon-color: #3b82f6;
+    --scrollbar-track: #1e293b;
+    --scrollbar-thumb: #475569;
+    --scrollbar-thumb-hover: #64748b;
+    --glow-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Global styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    width: 100%;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 100%;
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(circle at 25% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 75% 90%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+}
+
+/* Header styling */
+header {
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: 22px 24px;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.7;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+header h1 {
+    margin: 5px 0;
+    font-weight: 700;
+    color: var(--header-text);
+    font-size: 2.4rem;
+    letter-spacing: -0.025em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+header p {
+    margin: 10px 0 0;
+    opacity: 0.9;
+    font-size: 1.15rem;
+    font-weight: 400;
+    max-width: 600px;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: var(--header-text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 10px;
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 24px;
+    top: 16px;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    z-index: 5;
+}
+
+.theme-toggle:hover {
+    transform: rotate(30deg) scale(1.1);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+/* Back button */
+.back-button {
+    color: var(--header-text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 36px;
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    z-index: 5;
+}
+
+.back-button:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.back-button i {
+    margin-right: 6px;
+}
+
+/* Main content layout */
+.main-content {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+}
+
+.content-wrapper {
+    width: 80%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Sidebar styling */
+.sidebar {
+            width: 25%;
+            flex-shrink: 0;
+            height: 100vh;
+            /* Full viewport height */
+            max-height: 1000vh;
+            /* Ensure it doesn't grow beyond viewport */
+            background-color: var(--card-bg);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-self: stretch;
+            overflow-y: auto;
+            /* Make sidebar scrollable */
+        }
+
+        .market-overview {
+            padding: 10px 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: visible;
+        }
+
+        .market-overview h2 {
+            flex-shrink: 0;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .market-cards {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+            min-height: 0;
+        }
+
+        .market-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .market-card i {
+            font-size: 1.2rem;
+            color: var(--chart-icon-color);
+            margin-right: 12px;
+        }
+
+        .market-card h3 {
+            font-size: 0.95rem;
+            margin: 0 0 5px;
+        }
+
+        .market-card .price {
+            font-weight: 600;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .market-card .change {
+            font-size: 0.8rem;
+            margin: 2px 0 0;
+        }
+
+        .market-card .change.positive {
+            color: var(--positive-color);
+        }
+
+        .market-card .change.negative {
+            color: var(--negative-color);
+        }/* Chat container */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+    max-height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 80% 10%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 20% 90%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.chat-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--card-bg);
+    transition: background-color 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.chat-header h2 {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.chat-header h2::before {
+    content: '●';
+    color: var(--positive-color);
+    margin-right: 10px;
+    font-size: 0.8rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.chat-controls {
+    display: flex;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 8px;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    opacity: 1;
+    background-color: var(--hover-color);
+    transform: scale(1.1);
+}
+
+/* Chat messages */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background-color: var(--bg-color);
+    min-height: 150px;
+    scroll-behavior: smooth;
+    position: relative;
+    z-index: 1;
+}
+
+.message {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease-out;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+    align-items: flex-end;
+}
+
+.message.bot {
+    align-items: flex-start;
+}
+
+.message-content {
+    max-width: 75%;
+    padding: 18px 20px;
+    border-radius: 20px;
+    font-size: 1rem;
+    word-break: break-word;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    line-height: 1.6;
+}
+
+.message.user .message-content {
+    background: var(--message-user-bg);
+    color: var(--message-user-text);
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+}
+
+.message.bot .message-content {
+    background-color: var(--message-bot-bg);
+    color: var(--message-bot-text);
+    border-bottom-left-radius: 4px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+}
+
+.message-content p {
+    margin: 0 0 12px;
+    line-height: 1.6;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content ul {
+    margin: 10px 0;
+    padding-left: 25px;
+}
+
+.message-content li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Add time indicator to messages */
+.message::after {
+    content: attr(data-time);
+    font-size: 0.75rem;
+    color: var(--text-color);
+    opacity: 0.6;
+    margin-top: 6px;
+    padding: 0 10px;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    display: none;
+    padding: 15px;
+    align-items: center;
+}
+
+.typing-indicator span {
+    height: 9px;
+    width: 9px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    opacity: 0.7;
+    display: inline-block;
+    margin-right: 5px;
+    animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.3s;
+    margin-right: 0;
+}
+
+@keyframes typing {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Chat input */
+.chat-input-container {
+    padding: 18px 24px;
+    display: flex;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background-color: var(--input-bg);
+    border-radius: 30px;
+    padding: 8px 20px;
+    margin-right: 14px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.input-wrapper:focus-within::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    animation: slide-in 0.3s ease-out forwards;
+    transform-origin: left;
+}
+
+@keyframes slide-in {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+.input-wrapper i {
+    color: var(--primary-color);
+    opacity: 0.8;
+    margin-right: 12px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper:focus-within i {
+    transform: scale(1.1) rotate(-10deg);
+    opacity: 1;
+}
+
+#userInput {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 1.05rem;
+    color: var(--text-color);
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    line-height: normal;
+}
+
+#userInput::placeholder {
+    color: var(--text-color);
+    opacity: 0.5;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+#userInput:focus::placeholder {
+    opacity: 0.3;
+    transform: translateX(5px);
+}
+
+#sendButton {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    border-radius: 28px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    min-width: 100px;
+    position: relative;
+    overflow: hidden;
+}
+
+#sendButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.5s ease;
+}
+
+#sendButton:hover::before {
+    left: 100%;
+}
+
+#sendButton:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.4);
+}
+
+#sendButton:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+}
+
+#sendButton i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+#sendButton:hover i {
+    transform: translateX(-3px) rotate(-10deg);
+}
+
+/* Retry button */
+.retry-button {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.retry-button:hover {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
+}
+
+/* Loading spinner */
+.loading-spinner {
+    border: 3px solid rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid var(--primary-color);
+    width: 18px;
+    height: 18px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    right: 18px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+    }
+    
+    .content-wrapper {
+        width: 75%;
+    }
+    
+    .back-button {
+        left: 12px;
+    }
+    
+    .theme-toggle {
+        right: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.9rem;
+    }
+    
+    header p {
+        font-size: 0.95rem;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+}
+
+@media (max-width: 576px) {
+    .chat-input-container {
+        padding: 14px;
+    }
+    
+    #sendButton {
+        padding: 10px 15px;
+        min-width: 60px;
+    }
+    
+    #sendButton span {
+        display: none;
+    }
+    
+    #sendButton i {
+        margin-right: 0;
+    }
+}
+
+/* Add some animations throughout the interface */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-container {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.market-card {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.market-card:nth-child(1) { animation-delay: 0.1s; }
+.market-card:nth-child(2) { animation-delay: 0.2s; }
+.market-card:nth-child(3) { animation-delay: 0.3s; }
+.market-card:nth-child(4) { animation-delay: 0.4s; }
+.market-card:nth-child(5) { animation-delay: 0.5s; }
+
+/* Add subtle floating animation to first bot message */
+.message.bot:first-child {
+    animation: float 4s ease-in-out infinite;
+}
+
+#sendButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(106, 109, 255, 0.3);
+}
+
+#sendButton i {
+    margin-right: 5px;
+}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back</span>
+            </a>
+            <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="header-content">
+                <h1>AI Investment Advisor</h1>
+                <p>Chat with our AI to get investment insights and stock information</p>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="market-overview">
+                    <h2>Market Overview</h2>
+                    <div class="market-cards" id="marketCards">
+                        <!-- Market cards will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2>Investment Assistant</h2>
+                        <div class="chat-controls">
+                            <button class="control-btn" id="clearChat" title="Clear Chat">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot">
+                            <div class="message-content">
+                                <p>Hello! I'm your AI Investment Assistant. How can I help you today? You can ask me about:</p>
+                                <ul>
+                                    <li>Investment strategies and advice</li>
+                                    <li>Market trends and analysis</li>
+                                    <li>Company performance and financial data</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <div class="input-wrapper">
+                            <!-- <i class="fas fa-search"></i> -->
+                            <input type="text" id="userInput" placeholder="Ask about stocks, investments, or market trends..." />
+                        </div>
+                        <button id="sendButton">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const clearChatButton = document.getElementById('clearChat');
+        const marketCards = document.getElementById('marketCards');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Function to add timestamps to messages
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to add timestamps to messages
+            function addTimestamps() {
+                const messages = document.querySelectorAll('.message');
+                messages.forEach(message => {
+                    if (!message.hasAttribute('data-time')) {
+                        const now = new Date();
+                        const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                                          now.getMinutes().toString().padStart(2, '0');
+                        message.setAttribute('data-time', timeString);
+                    }
+                });
+            }
+            
+            // Add timestamps to existing messages
+            addTimestamps();
+            
+            // Observer for new messages
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length) {
+                        addTimestamps();
+                    }
+                });
+            });
+            
+            observer.observe(document.getElementById('chatMessages'), { childList: true });
+        });
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            html.setAttribute('data-theme', newTheme);
+
+            // Update icon
+            const icon = themeToggle.querySelector('i');
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+
+            // Save theme preference to localStorage
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Load saved theme preference from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+
+                // Update icon based on saved theme
+                const icon = themeToggle.querySelector('i');
+                if (savedTheme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                } else {
+                    icon.className = 'fas fa-moon';
+                }
+            }
+
+            // Initialize market cards
+            loadMarketCards();
+        });
+
+        // Example stock symbols for Indian and global markets
+        const stocks = [
+            { symbol: '^NSEI', name: 'Nifty 50' },
+            { symbol: '^DJI', name: 'Dow 30' },
+            { symbol: '^IXIC', name: 'Nasdaq' },
+            { symbol: '^RUT', name: 'Russell 2000' },
+            { symbol: '^GSPC', name: 'S&P 500' },
+            { symbol: '^FTSE', name: 'FTSE 100' },
+            { symbol: '^N225', name: 'Nikkei 225' },
+            { symbol: 'BTC-USD', name: 'Bitcoin' },
+            { symbol: 'ETH-USD', name: 'Ethereum' },
+            { symbol: 'RELIANCE.NS', name: 'Reliance Industries' },
+            { symbol: 'TCS.NS', name: 'Tata Consultancy Services' },
+            { symbol: 'HDFCBANK.NS', name: 'HDFC Bank' },
+            { symbol: 'INFY.NS', name: 'Infosys' },
+            { symbol: 'SBIN.NS', name: 'SBI' },
+            { symbol: 'AAPL', name: 'Apple Inc.' },
+            { symbol: 'MSFT', name: 'Microsoft' },
+            { symbol: 'AMZN', name: 'Amazon' },
+            { symbol: 'GOOGL', name: 'Alphabet (Google)' },
+            { symbol: 'TSLA', name: 'Tesla' },
+            { symbol: 'NVDA', name: 'NVIDIA' }
+        ];
+
+        // Load market overview cards
+        function loadMarketCards() {
+            marketCards.innerHTML = '';
+
+            stocks.forEach(stock => {
+                const card = document.createElement('div');
+                card.className = 'market-card loading';
+                card.innerHTML = `
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h3>${stock.name}</h3>
+                        <p class="price">Loading...</p>
+                        <p class="change">Loading...</p>
+                    </div>
+                    <div class="loading-spinner"></div>
+                `;
+                marketCards.appendChild(card);
+
+                // Fetch stock data
+                fetchStockData(stock.symbol, card);
+            });
+        }
+
+        // Fetch stock data from our API
+        async function fetchStockData(symbol, card) {
+            try {
+                const response = await fetch(`/stock?ticker=${symbol}`);
+                const data = await response.json();
+
+                if (data && data.Close) {
+                    // Get the first item in data.Close (first key-value pair)
+                    const closeValues = Object.values(data.Close);
+                    const openValues = Object.values(data.Open);
+
+                    const lastPrice = closeValues[0];
+                    const prevPrice = openValues[0];
+                    const change = lastPrice - prevPrice;
+                    const percentChange = (change / prevPrice) * 100;
+
+                    const priceElement = card.querySelector('.price');
+                    const changeElement = card.querySelector('.change');
+
+                    priceElement.textContent = `$${lastPrice.toFixed(2)}`;
+
+                    if (change >= 0) {
+                        changeElement.textContent = `+${change.toFixed(2)} (${percentChange.toFixed(2)}%)`;
+                        changeElement.className = 'change positive';
+                    } else {
+                        changeElement.textContent = `${change.toFixed(2)} (${percentChange.toFixed(2)}%)`;
+                        changeElement.className = 'change negative';
+                    }
+
+                    card.classList.remove('loading');
+                    // Remove the loading spinner
+                    const spinner = card.querySelector('.loading-spinner');
+                    if (spinner) {
+                        spinner.remove();
+                    }
+
+                    // Make the card clickable to show news for this stock
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', () => {
+                        // No news section now, so no action on click
+                    });
+                }
+            } catch (error) {
+                console.error(`Error fetching data for ${symbol}:`, error);
+                card.classList.remove('loading');
+                card.classList.add('error');
+                // Remove the loading spinner on error
+                const spinner = card.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.remove();
+                }
+
+                card.querySelector('.price').textContent = 'Error';
+                card.querySelector('.change').textContent = 'Failed to load data';
+            }
+        }
+
+        // Add user message to chat
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <p>${message}</p>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Add bot message to chat
+        function addBotMessage(message, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            // Format the message text: Replace line breaks with <br> tags
+            const formattedMessage = message.replace(/\n/g, '<br>');
+
+            let messageHTML = `<div class="message-content">`;
+
+            if (isError) {
+                messageHTML += `
+                    <p>${formattedMessage}</p>
+                    <p><button class="retry-button" onclick="retryLastMessage()">Retry</button></p>
+                `;
+            } else {
+                messageHTML += `<p>${formattedMessage}</p>`;
+            }
+
+            messageHTML += `</div>`;
+            messageDiv.innerHTML = messageHTML;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Store the last message for retry functionality
+        let lastUserMessage = '';
+
+        // Retry the last message
+        function retryLastMessage() {
+            if (lastUserMessage) {
+                sendMessage(lastUserMessage);
+            }
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // Send message to API and get response
+        async function sendMessage(message) {
+            showTypingIndicator();
+            lastUserMessage = message; // Store for retry
+
+            // Check if message is asking for stock recommendations under a price
+            const priceLimitObj = parsePriceLimit(message);
+            if (priceLimitObj !== null) {
+                // Handle stock recommendation locally
+                try {
+                    const recommendedStocks = await getStocksUnderPrice(priceLimitObj);
+                    hideTypingIndicator();
+                    if (recommendedStocks.length === 0) {
+                        addBotMessage(`Sorry, I couldn't find any stocks under ${priceLimitObj.currency}${priceLimitObj.price}.`);
+                    } else {
+                        const stockList = recommendedStocks.map(s => `${s.name} (${s.symbol}) - ${priceLimitObj.currency}${s.price.toFixed(2)}`).join('\n');
+                        const dividendNote = "\n\nNote: Dividend information is not available.";
+                        const riskWarning = "\n\nRisk Warning: Past performance ≠ future results. Consult a financial advisor.";
+                        addBotMessage(`Here are some stocks under ${priceLimitObj.currency}${priceLimitObj.price}:\n${stockList}${dividendNote}${riskWarning}`);
+                    }
+                } catch (error) {
+                    console.error('Error fetching stock recommendations:', error);
+                    hideTypingIndicator();
+                    addBotMessage(`Sorry, I encountered an error while fetching stock recommendations. Please try again later.`, true);
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error (${response.status}): ${errorText}`);
+                }
+
+                const data = await response.json();
+                hideTypingIndicator();
+                
+                // Check if data is a string (normal response)
+                if (typeof data === 'string') {
+                    addBotMessage(data);
+                } else if (data && typeof data === 'object') {
+                    // Handle object responses (just in case API returns an object)
+                    try {
+                        const formattedResponse = JSON.stringify(data, null, 2);
+                        addBotMessage(formattedResponse);
+                    } catch (e) {
+                        console.warn('Could not stringify object response:', e);
+                        addBotMessage(String(data));
+                    }
+                } else {
+                    addBotMessage("I received an unexpected response format. Please try again.");
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                hideTypingIndicator();
+                addBotMessage(`Sorry, I encountered an error. Please try again later or click retry below. (${error.message})`, true);
+            }
+        }
+
+        // Parse message for price limit requests
+        function parsePriceLimit(message) {
+            // Match patterns like "stocks under $100" or "shares below 50 USD" or "stocks under ₹500"
+            const patterns = [
+                /stocks?\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /shares?\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /companies\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /equities\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                // Additional patterns for price recommendations
+                /recommend\s+(?:stocks?|shares?|companies|equities)\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /what\s+(?:stocks?|shares?|companies|equities)\s+(?:are|can\s+I\s+(?:buy|get))\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /show\s+me\s+(?:stocks?|shares?|companies|equities)\s+(?:under|below|less\s+than)\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i
+            ];
+
+            // Patterns for stock limit orders (buy/sell at specific price)
+            const limitOrderPatterns = [
+                /(?:buy|purchase)\s+([A-Za-z0-9\s\.]+)\s+(?:at|when\s+it\s+(?:hits|reaches))\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /(?:sell)\s+([A-Za-z0-9\s\.]+)\s+(?:at|when\s+it\s+(?:hits|reaches))\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i,
+                /(?:set|create)\s+(?:a)?\s+(?:buy|sell)\s+(?:order|limit)\s+(?:for)?\s+([A-Za-z0-9\s\.]+)\s+(?:at|when\s+it\s+(?:hits|reaches))\s+[$₹£€]?(\d+(?:\.\d+)?)\s*(?:USD|INR|GBP|EUR)?/i
+            ];
+
+            // Check for currency symbols to determine currency
+            let currency = '$'; // Default to USD
+            if (message.includes('₹') || /\bINR\b/i.test(message) || /\brupees?\b/i.test(message)) {
+                currency = '₹';
+            } else if (message.includes('£') || /\bGBP\b/i.test(message) || /\bpounds?\b/i.test(message)) {
+                currency = '£';
+            } else if (message.includes('€') || /\bEUR\b/i.test(message) || /\beuros?\b/i.test(message)) {
+                currency = '€';
+            }
+
+            // Check for price limit requests (stocks under X price)
+            for (const pattern of patterns) {
+                const match = message.match(pattern);
+                if (match && match[1]) {
+                    const price = parseFloat(match[1]);
+                    if (!isNaN(price)) {
+                        return { type: 'priceLimit', price, currency };
+                    }
+                }
+            }
+
+            // Check for limit order requests (buy/sell at X price)
+            for (const pattern of limitOrderPatterns) {
+                const match = message.match(pattern);
+                if (match && match[1] && match[2]) {
+                    const stockName = match[1].trim();
+                    const price = parseFloat(match[2]);
+                    if (!isNaN(price)) {
+                        const orderType = message.toLowerCase().includes('buy') ? 'buy' : 'sell';
+                        return { 
+                            type: 'limitOrder', 
+                            stockName, 
+                            price, 
+                            currency,
+                            orderType
+                        };
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // Mock function to get stocks under a certain price
+        async function getStocksUnderPrice({ price, currency }) {
+            // This is a mock implementation - in a real application, this would call an API
+            const mockStocks = [
+                // USD stocks
+                { name: "Company A", symbol: "COMPA", price: 45.67, currency: '$' },
+                { name: "Company B", symbol: "COMPB", price: 78.90, currency: '$' },
+                { name: "Company C", symbol: "COMPC", price: 23.45, currency: '$' },
+                { name: "Company D", symbol: "COMPD", price: 67.89, currency: '$' },
+                { name: "Company E", symbol: "COMPE", price: 12.34, currency: '$' },
+                
+                // INR stocks
+                { name: "Indian Company A", symbol: "INDA", price: 456.78, currency: '₹' },
+                { name: "Indian Company B", symbol: "INDB", price: 789.01, currency: '₹' },
+                { name: "Indian Company C", symbol: "INDC", price: 234.56, currency: '₹' },
+                { name: "Indian Company D", symbol: "INDD", price: 678.90, currency: '₹' },
+                { name: "Indian Company E", symbol: "INDE", price: 123.45, currency: '₹' },
+                
+                // GBP stocks
+                { name: "British Company A", symbol: "GBPA", price: 45.67, currency: '£' },
+                { name: "British Company B", symbol: "GBPB", price: 78.90, currency: '£' },
+                { name: "British Company C", symbol: "GBPC", price: 23.45, currency: '£' },
+                
+                // EUR stocks
+                { name: "European Company A", symbol: "EURA", price: 45.67, currency: '€' },
+                { name: "European Company B", symbol: "EURB", price: 78.90, currency: '€' },
+                { name: "European Company C", symbol: "EURC", price: 23.45, currency: '€' }
+            ];
+            
+            // Filter stocks by currency and price
+            return mockStocks
+                .filter(stock => stock.currency === currency && stock.price < price)
+                .sort((a, b) => b.price - a.price) // Sort by price (highest first)
+                .slice(0, 5); // Limit to top 5 results
+        }
+
+        // Handle send button click
+        sendButton.addEventListener('click', () => {
+            const message = userInput.value.trim();
+            if (message) {
+                addUserMessage(message);
+                userInput.value = '';
+                sendMessage(message);
+            }
+        });
+
+        // Handle enter key press in input
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const message = userInput.value.trim();
+                if (message) {
+                    addUserMessage(message);
+                    userInput.value = '';
+                    sendMessage(message);
+                }
+            }
+        });
+
+        // Handle clear chat button
+        clearChatButton.addEventListener('click', () => {
+            // Keep only the first welcome message
+            const welcomeMessage = chatMessages.querySelector('.message');
+            chatMessages.innerHTML = '';
+            chatMessages.appendChild(welcomeMessage);
+        });
+    </script>
+</body>
+</html>
